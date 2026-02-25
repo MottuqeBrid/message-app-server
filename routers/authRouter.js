@@ -1,6 +1,7 @@
 const express = require("express");
 const { hashPassword, comparePassword } = require("../middleware/hassPassword");
 const UserModel = require("../schema/user.model");
+const { createToken } = require("../lib/jwtTokrn");
 const router = express.Router();
 
 router.post("/login", async (req, res) => {
@@ -34,6 +35,13 @@ router.post("/login", async (req, res) => {
         .status(400)
         .json({ success: false, error: "Invalid credentials" });
     }
+
+    const token = createToken(user);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+    });
     res
       .status(200)
       .json({ success: true, data: user, message: "Login successful" });
@@ -43,28 +51,49 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/register", hashPassword, async (req, res) => {
+  console.log("came here");
   try {
     const { email, username } = req.body;
-    exestingUser = await UserModel.findOne({ email });
-    if (exestingUser) {
+
+    const existingUser = await UserModel.findOne({ email });
+    console.log(existingUser);
+    if (existingUser) {
       return res
         .status(400)
         .json({ success: false, error: "User already exists" });
     }
-    exestingUser = await UserModel.findOne({ username });
-    if (exestingUser) {
+    const existingUserByUsername = await UserModel.findOne({ username });
+    if (existingUserByUsername) {
       return res
         .status(400)
         .json({ success: false, error: "Username already exists" });
     }
+
     const user = await UserModel.create(req.body);
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "User registered successfully",
-        data: user,
-      });
+    const token = createToken(user);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    });
+    res.status(200).json({
+      success: true,
+      message: "User registered successfully",
+      data: user,
+      token: token,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+router.get("/user", async (req, res) => {
+  try {
+    const { email } = req.query;
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ success: false, error: "User not found" });
+    }
+    res.status(200).json({ success: true, data: user });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
