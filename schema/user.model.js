@@ -43,6 +43,10 @@ const UserModel = new mongoose.Schema(
         },
       ],
     },
+    active: {
+      type: Boolean,
+      default: false,
+    },
     friends: [
       {
         type: mongoose.Schema.Types.ObjectId,
