@@ -8,7 +8,6 @@ const UserModel = new mongoose.Schema(
     },
     password: {
       type: String,
-      select: false,
     },
     name: {
       type: String,
