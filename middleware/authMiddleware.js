@@ -1,12 +1,21 @@
 const { verifyToken } = require("../lib/jwtTokrn");
 
+// const decodedToken = (token) => {
+//   const decoded = jwt.verify(token, process.env.SECRET_KEY);
+//   return decoded;
+// };
+
 const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(" ")[1];
+    let token;
+    token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      token = req.cookies.token;
+    }
     if (!token) {
       return res.status(401).json({ success: false, error: "Unauthorized" });
     }
-    const decoded = verifyToken(token);
+    const decoded = await verifyToken(token);
     if (!decoded) {
       return res.status(401).json({ success: false, error: "Invalid token" });
     }
