@@ -4,6 +4,11 @@ const cookieParser = require("cookie-parser");
 const { default: mongoose } = require("mongoose");
 const http = require("http");
 const { Server } = require("socket.io");
+const {
+  messageRouter,
+  registerMessageSocket,
+} = require("./routers/messageRouter");
+const userSocket = require("./utils/user.socket");
 
 require("dotenv").config();
 const app = express();
@@ -47,12 +52,15 @@ const io = new Server(server, {
   },
 });
 
+app.set("io", io);
+
 // =====================
 // REST API
 // =====================
 app.use("/api/auth", require("./routers/authRouter"));
 app.use("/api/friends", require("./routers/friendsRouter"));
 app.use("/api/user", require("./routers/UserRouter"));
+app.use("/api/messages", messageRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -62,18 +70,10 @@ app.get("/", (req, res) => {
 // SOCKET API
 // =====================
 
+registerMessageSocket(io);
+
 io.on("connection", (socket) => {
-  console.log("a user connected");
-  socket.on("send_message", (data) => {
-    console.log("message received: ", data);
-    // broadcast the message to all other clients
-    io.emit("receive_message", data);
-  });
-  socket.on("disconnect", () => {
-    {
-      console.log("user disconnected");
-    }
-  });
+  userSocket(io, socket);
 });
 
 // =====================

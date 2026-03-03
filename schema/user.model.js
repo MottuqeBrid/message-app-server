@@ -43,7 +43,7 @@ const UserModel = new mongoose.Schema(
         },
       ],
     },
-    active: {
+    isActive: {
       type: Boolean,
       default: false,
     },

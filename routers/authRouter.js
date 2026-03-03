@@ -122,8 +122,8 @@ router.get("/me", async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
-    const { name, email, ...rest } = user;
-    res.status(200).json({ success: true, user: { name, email } });
+    const { _id, name, email, ...rest } = user;
+    res.status(200).json({ success: true, user: { _id, name, email } });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
