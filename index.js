@@ -10,16 +10,19 @@ const {
 } = require("./routers/messageRouter");
 const userSocket = require("./utils/user.socket");
 
+const origins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://message-app.vercel.app",
+  "https://message-app-cbbz.vercel.app",
+];
+
 require("dotenv").config();
 const app = express();
 app.use(cookieParser());
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "https://message-app.vercel.app",
-    ],
+    origin: origins,
     credentials: true,
   }),
 );
@@ -43,11 +46,7 @@ const server = http.createServer(app);
 // Create a Socket.io instance and attach it to the HTTP server
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "https://message-app.vercel.app",
-    ],
+    origin: origins,
     credentials: true,
   },
 });
